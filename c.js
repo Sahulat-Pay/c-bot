@@ -8,6 +8,11 @@ const port = process.env.PORT || 4000;
 app.listen(port, () => {
     console.log(`Example app listening on port ${port}`)
 })
+
+app.post("/", (req,res,next) => {
+  return res.status(200).json({status: "success"})
+})
+
 // Replace with your bot token
 const BOT_TOKEN = process.env.BOT_TOKEN;
 
