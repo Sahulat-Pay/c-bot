@@ -9,7 +9,7 @@ app.listen(port, () => {
     console.log(`Example app listening on port ${port}`)
 })
 
-app.post("/", (req,res,next) => {
+app.get("/", (req,res,next) => {
   return res.status(200).json({status: "success"})
 })
 
