@@ -1,5 +1,18 @@
 const axios = require("axios");
+const express = require("express");
 const TelegramBot = require("node-telegram-bot-api");
+
+const app = express()
+const PORT = process.env.PORT || 3000;
+
+app.use(PORT, (req,res) => {
+    console.log(`Example app listening on port ${port}`)
+})
+
+app.get("/", (req, res) => {
+    return res.status(200).json({status: "success"})
+})
+
 
 // Replace with your bot token
 const BOT_TOKEN = "8066612704:AAF89QTs_HLaMLRC9DfBHNcLVKqLl7jnAmc";
