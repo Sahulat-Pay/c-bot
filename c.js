@@ -6,7 +6,7 @@ const app = express();
 const port = process.env.PORT || 4000;
 
 app.listen(port, () => {
-    console.log(Example app listening on port ${port});
+    console.log(`Example app listening on port ${port}`);
 });
 
 app.get("/", (req, res, next) => {
@@ -33,7 +33,7 @@ const retry = async (fn, retries = 1, delay = 2000) => {
             return await fn();
         } catch (error) {
             if (i === retries - 1) throw error;
-            console.log(Retry ${i + 1}/${retries} after error: ${error.message});
+            console.log(`Retry ${i + 1}/${retries} after error: ${error.message}`);
             await new Promise((resolve) => setTimeout(resolve, delay));
         }
     }
@@ -49,9 +49,9 @@ const handleTransactionAndPayout = async (chatId, order, type = "transaction") =
 
         let apiUrl;
         if (type === "transaction") {
-            apiUrl = https://server.sahulatpay.com/transactions/tele?merchantTransactionId=${order};
+            apiUrl = "https://server.sahulatpay.com/transactions/tele?merchantTransactionId=${order}";
         } else if (type === "payout") {
-            apiUrl = ${PAYOUT_API_URL}?merchantTransactionId=${order};
+            apiUrl = `${PAYOUT_API_URL}?merchantTransactionId=${order}`;
         } else {
             //console.error("Invalid type specified.");
             await retry(() => bot.sendMessage(chatId, "Invalid transaction type."));
@@ -68,7 +68,7 @@ const handleTransactionAndPayout = async (chatId, order, type = "transaction") =
             const payoutData = response.data?.data?.transactions;
             if (!payoutData || !payoutData.length) {
                 //console.log(No transactions found for order: ${order});
-                await retry(() => bot.sendMessage(chatId, Transaction (${order}) not found in back-office.));
+                await retry(() => bot.sendMessage(chatId,  `Transaction (${order}) not found in back-office.`));
                 return;
             }
             transaction = payoutData[0];
@@ -76,7 +76,7 @@ const handleTransactionAndPayout = async (chatId, order, type = "transaction") =
 
         if (!transaction) {
             //console.log(Transaction with order ID ${order} not found.);
-            await retry(() => bot.sendMessage(chatId, Transaction "${order}" not found in back-office.));
+            await retry(() => bot.sendMessage(chatId, `Transaction "${order}" not found in back-office.`));
             return;
         }
 
@@ -105,7 +105,7 @@ const handleTransactionAndPayout = async (chatId, order, type = "transaction") =
             try {
                 const callbackResponse = await retry(() => axios.post(callbackUrl, { transactionIds: [merchantTransactionId] }));
                 //console.log("Callback API Response:", callbackResponse.data);
-                await retry(() => bot.sendMessage(chatId, Transaction Status ${merchantTransactionId} : Completed.\n\nTxnID: ${txn_id}));
+                await retry(() => bot.sendMessage(chatId, `Transaction Status ${merchantTransactionId} : Completed.\n\nTxnID: ${txn_id}`));
             } catch (error) {
                 //console.error("Error calling callback API:", error.response?.data || error.message);
                 await retry(() => bot.sendMessage(chatId, "Error updating transaction status."));
@@ -120,10 +120,10 @@ const handleTransactionAndPayout = async (chatId, order, type = "transaction") =
             let inquiryUrl, inquiryResponse;
 
             if (providerName === "easypaisa") {
-                inquiryUrl = https://server.sahulatpay.com/payment/inquiry-ep/${uid}?orderId=${order};
+                inquiryUrl = `https://server.sahulatpay.com/payment/inquiry-ep/${uid}?orderId=${order}`;
                 inquiryResponse = await retry(() => axios.get(inquiryUrl, { params: { transaction_id: merchantTransactionId } }));
             } else if (providerName === "jazzcash") {
-                inquiryUrl = https://server.sahulatpay.com/payment/status-inquiry/${uid};
+                inquiryUrl = `https://server.sahulatpay.com/payment/status-inquiry/${uid}`;
                 inquiryResponse = await retry(() => axios.post(inquiryUrl, { transactionId: merchantTransactionId }));
             }
 
@@ -137,30 +137,30 @@ const handleTransactionAndPayout = async (chatId, order, type = "transaction") =
 
                 if (!inquiryStatus || inquiryStatus === "failed" || inquiryStatus === "pending" || inquiryStatusCode === 500) {
                     await retry(() => axios.post(FAIL_API_URL, { transactionIds: [merchantTransactionId] }));
-                    console.log(Transaction ${merchantTransactionId} marked as failed.);
+                    console.log(`Transaction ${merchantTransactionId} marked as failed.`);
                     const reason = !inquiryStatus ? "Missing Status" : inquiryStatus === "pending" ? "Pending" : "Failed";
-                    await retry(() => bot.sendMessage(chatId, ${merchantTransactionId} Status: Failed (Reason: ${reason}).));
+                    await retry(() => bot.sendMessage(chatId, `${merchantTransactionId} Status: Failed (Reason: ${reason}).`));
                     return;
                 } else if (inquiryStatus === "completed") {
                     await retry(() => axios.post(SETTLE_API_URL, { transactionId: merchantTransactionId }));
-                    console.log(Transaction ${merchantTransactionId} marked as completed.);
-                    await retry(() => bot.sendMessage(chatId, Transaction Status ${merchantTransactionId}: Completed.));
+                    console.log(`Transaction ${merchantTransactionId} marked as completed.`);
+                    await retry(() => bot.sendMessage(chatId, `Transaction Status ${merchantTransactionId}: Completed.`));
                     return;
                 } else {
                     // Handle unexpected statuses
-                    console.log(Unexpected inquiry status for ${merchantTransactionId}: ${inquiryStatus});
+                    console.log(`Unexpected inquiry status for ${merchantTransactionId}: ${inquiryStatus}`);
                     await retry(() => axios.post(FAIL_API_URL, { transactionIds: [merchantTransactionId] }));
-                    await retry(() => bot.sendMessage(chatId, ${merchantTransactionId} Status: Failed (Reason: Unexpected Status - ${inquiryStatus}).));
+                    await retry(() => bot.sendMessage(chatId,`${merchantTransactionId} Status: Failed (Reason: Unexpected Status - ${inquiryStatus}).`));
                     return;
                 }
             }
         }
 
         //console.log(Final Status for transaction ${merchantTransactionId}: Failed.);
-        await retry(() => bot.sendMessage(chatId, ${merchantTransactionId} Status: Failed.));
+        await retry(() => bot.sendMessage(chatId, `${merchantTransactionId} Status: Failed.`));
     } catch (error) {
         //console.error("Error handling transaction:", error);
-        await retry(() => bot.sendMessage(chatId, Error: ${error.message}));
+        await retry(() => bot.sendMessage(chatId, `Error: ${error.message}`));
     }
 };
 
