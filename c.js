@@ -6,7 +6,7 @@ const app = express()
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, (req,res) => {
-    console.log(`Example app listening on port ${port}`)
+    console.log(`Example app listening on port ${PORT}`)
 })
 
 app.get("/", (req, res) => {
