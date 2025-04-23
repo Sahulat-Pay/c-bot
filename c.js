@@ -5,7 +5,7 @@ const TelegramBot = require("node-telegram-bot-api");
 const app = express()
 const PORT = process.env.PORT || 3000;
 
-app.use(PORT, (req,res) => {
+app.listen(PORT, (req,res) => {
     console.log(`Example app listening on port ${port}`)
 })
 
